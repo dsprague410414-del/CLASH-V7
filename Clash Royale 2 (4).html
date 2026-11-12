@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clash Royale 2</title>
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#14161f;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{max-width:400px;margin:0 auto;padding:8px;user-select:none}
+#top{display:flex;justify-content:space-between;font-weight:700;padding:4px 6px;font-size:15px}
+canvas{width:100%;display:block;border-radius:10px;touch-action:manipulation}
+#bar{position:relative;height:22px;background:#2a2d3d;border-radius:11px;margin:8px 0;overflow:hidden}
+#fill{height:100%;width:50%;background:linear-gradient(90deg,#b13bd6,#e873ff)}
+#ex{position:absolute;inset:0;text-align:center;line-height:22px;font-size:13px}
+#hand{display:grid;grid-template-columns:repeat(4,1fr) 52px;gap:6px;align-items:end}
+.card{position:relative;background:#2a2d3d;border:2px solid #3b3f55;border-radius:10px;padding:6px 0 4px;text-align:center;cursor:pointer;color:#fff;font:inherit}
+.card .e{font-size:28px;display:block}.card small{display:block;font-size:11px;opacity:.8}
+.card .c{display:inline-block;background:#b13bd6;border-radius:50%;width:20px;height:20px;line-height:20px;font-size:12px;font-weight:700;margin-top:2px}
+.card.no{opacity:.45}.card.sel{border-color:#ffd54a;transform:translateY(-5px)}
+#next{opacity:.7;text-align:center;font-size:10px}#next .card{padding:2px 0;transform:scale(.85)}
+#over{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5}
+#over[hidden]{display:none}#over h1{font-size:44px;margin:0}
+#over button{font:inherit;font-weight:700;padding:12px 28px;border:0;border-radius:10px;background:#ffd54a;color:#222;font-size:18px}
+[hidden]{display:none!important}
+.scr{max-width:400px;margin:0 auto;padding:16px 12px;text-align:center}
+.scr h2{margin:6px 0}.coins{font-weight:700;color:#ffd54a;font-size:18px;margin-bottom:10px}
+.big{display:block;width:100%;font:inherit;font-weight:700;font-size:20px;padding:16px;margin:10px 0;border:0;border-radius:12px;background:#ffd54a;color:#222}
+.big.alt{background:#4aa3ff}.big.pur{background:#b45cff;color:#fff}.big.gry{background:#3b3f55;color:#fff}.big:disabled{opacity:.4}
+#msg{color:#ff8a8a;min-height:20px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.grid .card{padding:4px 0}.grid .card .e{font-size:24px}.grid .card.lock{opacity:.3}.grid .card.in{background:#3a3f5c;outline:2px solid #ffd54a}
+#res{min-height:170px;margin:12px 0}#res .card{display:inline-block;width:130px;padding:12px;transform:scale(1.1)}#res .e{font-size:56px}
+#top button{background:none;border:0;color:#fff;font-size:16px}
+.row{display:grid;grid-template-columns:34px 1fr 1fr;gap:6px;margin:5px 0;align-items:center;font-weight:700}
+.row button{font:inherit;font-size:13px;padding:8px 4px;border:2px solid #3b3f55;border-radius:8px;background:#2a2d3d;color:#fff}
+.row button.ok{border-color:#ffd54a}.row button:disabled{opacity:.4}.row button.done{background:#234d2e}
+.bpx{height:14px;background:#2a2d3d;border-radius:7px;overflow:hidden;margin:6px 0}.bpx i{display:block;height:100%;background:#ffd54a}
+.sbtn{display:flex;justify-content:space-between;align-items:center;width:100%;font:inherit;font-size:14px;padding:12px;margin:5px 0;border:2px solid #3b3f55;border-radius:10px;background:#2a2d3d;color:#fff;text-align:left}.sbtn:disabled{opacity:.4}
+#pick{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:6;padding:16px}#pick[hidden]{display:none}
+.opt{width:100%;max-width:340px;font:inherit;border:3px solid;border-radius:12px;padding:12px;background:#2a2d3d;color:#fff;text-align:left}
+</style></head><body>
+<div id="menu" class="scr"><h1>⚔️ Clash Royale 2</h1><div class="coins" id="mc"></div><div id="lvl" style="font-size:13px;margin-bottom:8px"></div>
+<button class="big" id="bPlay">▶ Play</button><button class="big" id="bChaos" style="background:#ff6b3d;color:#fff">🌪️ Chaos Mode</button><button class="big alt" id="bDeck">🃏 Deck</button><button class="big pur" id="bGacha">🎰 Gacha</button><button class="big gry" id="bEvo">⭐ Evolve</button><button class="big gry" id="bBdg">🎖️ Badges</button><button class="big" id="bShop" style="background:#ff9f1c">🛒 Shop</button><button class="big alt" id="bCol">📚 Collection</button><button class="big" id="bBP" style="background:#2fbf71;color:#fff">🏆 Battle Pass</button><div style="font-size:12px;opacity:.7">Chaos Mode: your deck, +50% elixir, double-health towers, no evos. Every 45–60s both players pick 1 of 2 card modifiers!</div><div id="msg"></div></div>
+<div id="deck" class="scr" hidden><h2>Your Deck <span id="dc"></span></h2><div style="font-size:13px;opacity:.7">Tap owned cards to add or remove (need 8)</div><div id="di" style="min-height:48px;font-size:13px;color:#ffd54a;margin-top:6px">Tap a card to add or remove it and see its level.</div><div class="grid" id="dg"></div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="gacha" class="scr" hidden><h2>🎰 Gacha</h2><div class="coins" id="gc"></div><div id="res"></div>
+<button class="big pur" id="pull"></button><div style="font-size:12px;opacity:.7">Common 55% · Rare 28% · Epic 13% · Legendary 4%. Duplicates give +1 card copy (for leveling up) and 20 coins.</div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="pick" hidden><h2 style="margin:0">🌪️ Choose a Modifier</h2><div id="pt" style="color:#ffd54a"></div><div id="pe" style="font-size:13px;color:#ff8a8a;text-align:center"></div><div id="po" style="width:100%;max-width:340px"></div></div>
+<div id="bdg" class="scr" hidden><h2>🎖️ Badges</h2><div class="coins" id="bs2"></div><div id="bi" style="min-height:40px;font-size:13px;color:#ffd54a"></div><div class="grid" id="bgg"></div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="shop" class="scr" hidden><h2>🛒 Shop</h2><div class="coins" id="sc"></div><div id="sr" style="font-size:14px;color:#ffd54a;min-height:20px"></div><div id="sl"></div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="col" class="scr" hidden><h2>📚 Collection</h2><div class="coins" id="cs"></div><div id="ci" style="min-height:40px;font-size:13px;color:#ffd54a"></div><div class="grid" id="cg"></div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="bp" class="scr" hidden><h2>🏆 Battle Pass</h2><div class="coins" id="bc"></div><div id="tabs"></div><div id="bx"></div><div id="bl"></div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="evo" class="scr" hidden><h2>⭐ Evolve</h2><div style="font-size:13px;opacity:.8">Evo shards come from battle passes (wild shards you place yourself) and chests. Tap a card to put a wild shard on it; 3 shards evolve it: +20% HP, gold ring, and its own unique ability. Tap a card to read it.</div><div id="ws" style="font-weight:700;margin-top:6px"></div><div id="em" style="color:#ffd54a;min-height:22px;margin-top:6px"></div><div class="grid" id="eg"></div><button class="big gry" onclick="show('menu')">Back</button></div>
+<div id="app" hidden>
+<div id="top"><span><button id="quit">✕</button><span id="timer">3:00</span></span><span id="score">👑 0 – 0</span></div>
+<canvas id="c" width="360" height="560"></canvas>
+<div id="mods" style="font-size:12px;margin:6px 0;line-height:1.5"></div><div id="bar"><div id="fill"></div><b id="ex">5</b></div>
+<div id="hand"></div>
+</div>
+<div id="over" hidden><h1 id="ot"></h1><div id="os"></div><button id="again">Rematch</button><button id="home" style="background:#4aa3ff">Menu</button></div>
+<script>
+const $=id=>document.getElementById(id),cv=$('c'),g=cv.getContext('2d');
+const W=360,H=560,RY=280,BR=[75,285];
+const R={c:['Common','#9aa3b2'],r:['Rare','#4aa3ff'],e:['Epic','#b45cff'],l:['Legendary','#ffb020'],x:['Exclusive','#ff4fa3']};
+const U=(nm,em,r,cost,hp,dmg,spd,rng,cd,o={})=>({nm,em,r,cost,hp,dmg,spd,rng,cd,num:1,...o});
+const C={
+knight:U('Knight','🗡️','c',3,300,35,40,18,1),
+archers:U('Archers','🏹','c',3,80,18,40,90,.9,{num:2}),
+imps:U('Imps','🦇','c',2,45,14,75,14,.6,{num:3}),
+bomber:U('Bomber','💣','c',2,75,40,40,70,1.8,{spl:26}),
+skeletons:U('Skeletons','💀','c',1,25,12,60,12,.5,{num:4}),
+slime:U('Slime','🟢','c',2,220,18,35,14,1),
+spearmen:U('Spearmen','🔱','c',3,90,22,42,40,1,{num:2}),
+wizard:U('Wizard','🔮','r',4,120,45,38,80,1.4,{spl:30}),
+ghost:U('Ghost','👻','r',3,150,30,55,16,.8),
+ninja:U('Ninja','🥷','r',3,110,50,85,14,.7),
+cavalry:U('Cavalry','🐎','r',4,300,45,85,16,1,{bld:1}),
+giant:U('Giant','🪨','e',5,850,55,24,18,1.5,{bld:1,big:1}),
+berserker:U('Berserker','🪓','e',4,480,65,45,16,1),
+sniper:U('Sniper','🎯','e',4,90,85,28,140,1.8),
+dragon:U('Dragon','🐉','l',5,420,60,48,60,1.2,{spl:24}),
+golem:U('Golem','🗿','l',6,1400,80,20,18,1.8,{bld:1,big:1}),
+shield:U('Shieldbearer','🛡️','c',2,350,15,38,16,1),
+thief:U('Thief','🦹','c',2,100,30,70,14,.7),
+frost:U('Frost Mage','❄️','r',4,130,35,38,85,1.2,{spl:28}),
+rhino:U('Rhino','🦏','e',5,700,90,70,18,1.4,{bld:1,big:1}),
+phoenix:U('Phoenix','🔥','l',5,380,55,60,50,1,{spl:30}),
+minis:U('Mini Knights','🤺','c',3,90,20,55,14,.8,{num:3}),
+blaster:U('Blaster','🧨','c',2,60,50,45,50,2,{spl:30}),
+zapper:U('Zapper','⚡','r',3,120,28,45,60,.5),
+sorcerer:U('Sorcerer','🧙','e',5,200,40,38,85,1,{spl:35}),
+kraken:U('Kraken','🐙','l',6,900,120,30,20,2,{big:1,spl:40}),
+viking:U('Viking','⚔️','c',3,260,38,45,18,.9),
+jester:U('Jester','🤡','c',2,80,22,55,60,.8),
+vampire:U('Vampire','🧛','r',4,250,40,50,18,.9),
+ogre:U('Ogre','👹','e',5,650,85,35,20,1.5,{spl:28}),
+angel:U('Angel','😇','l',5,500,45,50,55,.8),
+digger:U('Digger','⛏️','c',3,120,40,55,14,1,{bld:1}),
+medic:U('Medic','💉','c',3,140,15,40,50,1),
+brawler:U('Brawler','🥊','c',3,330,40,42,16,1),
+monk:U('Monk','🧘','r',4,420,45,40,16,.9),
+hunter:U('Hunter','🔫','r',4,160,22,40,60,.5),
+eagle:U('Eagle','🦅','r',3,140,32,80,20,1),
+mech:U('Mech','🤖','e',5,600,70,35,55,1.3),
+yeti:U('Yeti','☃️','e',5,750,60,38,18,1.1,{spl:24}),
+lich:U('Lich','☠️','l',6,650,90,36,70,1.4,{spl:34}),
+hydra:U('Hydra','🐲','l',6,1000,75,32,55,1.2,{big:1,spl:30}),
+hound:U('Hound','🐕','c',2,110,22,75,14,.6),
+bowler:U('Bowler','🎳','c',3,100,45,38,70,1.8,{spl:22}),
+bandit:U('Bandit','🕵️','c',3,190,30,60,14,.8),
+elephant:U('Elephant','🐘','c',4,520,45,36,18,1.2,{big:1}),
+cultist:U('Cultist','🕯️','c',2,90,28,48,50,1),
+corsair:U('Corsair','🏴','r',4,260,35,48,60,.9),
+druid:U('Druid','🌿','r',3,200,20,40,55,1),
+samurai:U('Samurai','🥋','r',4,280,70,55,16,1.1),
+alchemist:U('Alchemist','⚗️','r',3,110,35,38,75,1.6,{spl:30}),
+cannoneer:U('Cannoneer','🛢️','r',4,170,65,30,80,1.7),
+phantom:U('Phantom','🎭','e',4,360,50,65,16,.8),
+stormcaller:U('Stormcaller','🌩️','e',5,260,40,36,85,1.1,{spl:38}),
+colossus:U('Colossus','🦣','e',6,1100,80,26,20,1.7,{bld:1,big:1}),
+titan:U('Titan','🌋','l',6,1300,100,28,20,2,{big:1,spl:40}),
+timemage:U('Time Mage','⏳','x',4,220,45,40,80,1,{spl:26}),
+shadowking:U('Shadow King','👑','x',5,800,85,45,18,1),
+starknight:U('Star Knight','🌟','x',3,380,50,55,18,.8),
+archangel:U('Archangel','👼','x',5,600,55,55,60,.8),
+voideye:U('Void Eye','👁️','x',5,500,95,30,100,1.6),
+mecha:U('Mecha Rex','🦖','x',6,900,90,45,55,1.3,{big:1,spl:36}),
+wolf:U('Wolf','🐺','c',2,120,25,70,14,.7),
+boar:U('Boar','🐗','c',3,260,35,65,16,1,{bld:1}),
+bees:U('Bee Swarm','🐝','c',2,35,10,80,12,.5,{num:3}),
+crab:U('Crab','🦀','c',3,300,30,30,16,1),
+bard:U('Bard','🎺','c',3,100,18,40,75,.9),
+scorpion:U('Scorpion','🦂','r',3,150,30,50,40,.8),
+serpent:U('Serpent','🐍','r',4,200,38,55,20,.6),
+zombie:U('Zombie','🧟','r',3,330,30,30,16,1.1),
+pixie:U('Pixie','🧚','r',2,70,22,60,55,.7),
+fox:U('Fox','🦊','r',3,130,34,85,14,.7),
+spiderq:U('Spider Queen','🕷️','e',5,400,40,45,50,.8),
+genie:U('Genie','🧞','e',5,300,55,40,85,1.2,{spl:34}),
+bear:U('Bear','🐻','e',5,900,75,38,18,1.3,{big:1}),
+leviathan:U('Leviathan','🦈','l',6,1100,110,40,20,1.6,{big:1,spl:30}),
+owl:U('Elder Owl','🦉','l',5,500,60,50,75,.9,{spl:30}),
+gator:U('Gator King','🐊','x',5,950,85,40,18,1.1,{big:1}),
+magnet:U('Magnet Bot','🧲','x',3,260,30,40,60,.7),
+drum:U('Drum Major','🥁','x',4,350,25,45,18,.8),
+sun:U('Sun Titan','☀️','x',6,1000,100,36,60,1.5,{big:1,spl:40}),
+moon:U('Moon Witch','🌙','x',4,240,50,45,80,1.2,{spl:30}),
+frog:U('Frog','🐸','c',2,90,20,55,40,.8),
+hedgehog:U('Hedgehog','🦔','c',2,160,18,40,14,.8),
+squirrel:U('Squirrel','🐿️','c',1,50,15,70,12,.6),
+beetle:U('Beetle','🪲','c',3,280,30,35,14,1),
+cowboy:U('Cowboy','🤠','c',3,110,24,45,65,.8),
+ants:U('Ant Troop','🐜','c',2,40,12,65,12,.6,{num:3}),
+tiger:U('Tiger','🐅','r',4,240,55,70,16,.9),
+penguin:U('Penguin','🐧','r',3,180,25,45,55,.9),
+kangaroo:U('Kangaroo','🦘','r',3,200,40,60,16,.9),
+mushroom:U('Mushroom','🍄','r',2,130,20,35,50,1.1,{spl:24}),
+goblin:U('Goblin','👺','r',3,150,32,60,14,.6),
+butterfly:U('Butterfly','🦋','r',3,100,28,65,60,.7),
+lion:U('Lion','🦁','e',5,700,80,50,18,1.1),
+troll:U('Troll','🧌','e',5,950,70,32,18,1.4,{big:1}),
+pumpkin:U('Pumpkin King','🎃','e',4,380,50,40,55,1.2,{spl:30}),
+peacock:U('Peacock','🦚','e',4,260,45,48,80,.9),
+bison:U('Bison','🦬','e',5,800,75,55,18,1.2,{bld:1,big:1}),
+seaserpent:U('Sea Serpent','🌊','l',6,900,85,40,60,1.2,{big:1,spl:38}),
+stag:U('Elder Stag','🦌','l',5,750,70,50,20,1),
+invader:U('Invader','👾','l',5,450,95,45,90,1.5,{spl:30})};
+const ALL=Object.keys(C),DECK=8,PULL=100,DUPE=20,SH=3;
+let P={sh:{},evo:{},xp:0,xp2:0,xp3:0,xp4:0,xp5:0,claimed:{},prem:false,prem2:false,prem3:false,prem4:false,prem5:false,streak:0,badges:{},xp6:0,prem6:false,cp:{},lv:{},ws:0,axp:0,ch:1,sb:{},shopDay:'',giftDay:'',coins:500,own:['knight','archers','imps','bomber','skeletons','slime','spearmen','wizard'],deck:['knight','archers','imps','bomber','skeletons','slime','spearmen','wizard']};
+try{const x=JSON.parse(localStorage.getItem('tt3'));if(x&&x.own)P={sh:{},evo:{},xp:0,xp2:0,xp3:0,xp4:0,xp5:0,claimed:{},prem:false,prem2:false,prem3:false,prem4:false,prem5:false,streak:0,badges:{},xp6:0,prem6:false,cp:{},lv:{},ws:0,axp:0,ch:1,sb:{},shopDay:'',giftDay:'',...x}}catch(e){}
+const save=()=>{try{localStorage.setItem('tt3',JSON.stringify(P))}catch(e){}};
+if(!P.cpi){P.cpi=1;for(const k of P.own)P.cp[k]=(P.cp[k]||0)+2;save()}
+const lvOf=k=>S&&S.chaos&&!$('app').hidden?11:(P.lv[k]||1);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const mkT=(team,x,y,king)=>({team,x,y,king,hp:king?1500:900,max:king?1500:900,t:0,dead:false});
+let S,last=0;
+function reset(ch){ch=ch===true;
+ S={t:180,units:[],fx:[],el:[5,5],sel:null,over:false,ai:3,
+ tw:[mkT(1,75,110),mkT(1,285,110),mkT(1,180,45,1),mkT(0,75,450),mkT(0,285,450),mkT(0,180,515,1)]};
+ S.chaos=ch;S.rage=S.frz=0;S.pt=45+Math.random()*15;S.pk=null;S.mods=[{},{}];S.picked=[];S.cdk=shuffle(ALL.slice()).slice(0,8);S.aiEvo={};S.cpuLv=Math.min(11,1+Math.floor((accLvl()-1)/2)+(Math.random()<.5?1:0));if(!ch)for(const k of ALL)S.aiEvo[k]=Math.random()<.35;if(ch){S.t=240;S.tw.forEach(t=>{t.hp*=2;t.max*=2})}const d=shuffle(P.deck.slice());S.h=d.splice(0,4);S.q=d;S.earn=0;buildHand();$('over').hidden=true;show('app')}
+function renderMods(){const el=$('mods');if(!S||!S.chaos){el.innerHTML='';return}
+ const f=t=>Object.entries(S.mods[t]).map(([k,m])=>`<span style="display:inline-block;margin-right:8px;color:${MR[m.r][1]}" title="${m.d}">${C[k].em} ${m.em} ${m.n}</span>`).join('')||'<span style="opacity:.6">none yet</span>';
+ el.innerHTML=`<div>🔵 <b>You:</b> ${f(0)}</div><div>🔴 <b>Opponent:</b> ${f(1)}</div>`}
+function buildHand(){renderMods();
+ const el=$('hand');el.innerHTML='';
+ S.h.forEach((k,i)=>{const c=C[k],b=document.createElement('button');b.className='card';b.style.borderColor=R[c.r][1];
+  b.innerHTML=cardH(k,S.chaos&&S.mods[0][k]?`<small>${S.mods[0][k].em}</small>`:'');
+  b.onclick=()=>{S.sel=S.sel===i?null:i};el.appendChild(b)});
+ const n=C[S.q[0]],d=document.createElement('div');d.id='next';
+ d.innerHTML=`<div>Next</div><div class="card"><span class="e" style="font-size:20px">${n.em}</span></div>`;el.appendChild(d)}
+const EVO={
+knight:['Shield Wall','Blocks 30% of damage',{armor:.3}],
+archers:['Volley','Fire 50% faster, +25 range',{cdm:.67,rng:25}],
+imps:['Frenzy Swarm','Attack twice as fast',{cdm:.5}],
+bomber:['Cluster Bomb','Bigger blast that burns',{spl:44,burn:12}],
+skeletons:['Bone Revival','Spawn 4 skeletons on death',{rez:'skeletons'}],
+slime:['Splitting Slime','Splits into 3 imps on death',{rez:'imps'}],
+spearmen:['Phalanx','Blocks 20%, +20 range',{armor:.2,rng:20}],
+wizard:['Arcane Burst','Huge splash that burns',{spl:45,burn:15}],
+ghost:['Phantom Touch','Heals 60% of damage, 25% armor',{vamp:.6,armor:.25}],
+ninja:['Shadow Blade','Every 3rd hit crits for 2.5x, +30% speed',{crit:3,spdm:1.3}],
+cavalry:['Siege Charge','Double damage to towers, +20% speed',{twm:2,spdm:1.2}],
+giant:['Titan Wrath','Explodes for 200 on death, 15% armor',{boom:[60,200],armor:.15}],
+berserker:['Bloodlust','Heals 40% of damage, attacks 30% faster',{vamp:.4,cdm:.7}],
+sniper:['Headshot','Every 2nd shot crits, +40 range',{crit:2,rng:40}],
+dragon:['Inferno Breath','Burns targets, bigger splash',{burn:25,spl:38}],
+golem:['Stone Heart','Explodes on death, 40% armor',{boom:[70,250],armor:.4}],
+shield:['Fortress','Blocks 50% of damage',{armor:.5}],
+thief:['Pickpocket','Heals 70% of damage, +30% speed',{vamp:.7,spdm:1.3}],
+frost:['Deep Freeze','Hits slow enemies, bigger splash',{slow:1,spl:42}],
+rhino:['Stampede','Stuns every 2nd hit, +30% speed',{stun:2,spdm:1.3}],
+phoenix:['Ashes Rebirth','Revives at 70% HP, burns foes',{reb:.7,burn:20}],
+minis:['Squad Tactics','Attack 40% faster, 15% armor',{cdm:.6,armor:.15}],
+blaster:['Mega Blast','Huge splash, +30 range',{spl:50,rng:30}],
+zapper:['Static Shock','Stuns every 3rd hit',{stun:3,cdm:.8}],
+sorcerer:['Meteor Mage','Huge splash that burns',{spl:56,burn:18}],
+kraken:['Tidal Rebirth','Revives at 60% HP, slows enemies',{reb:.6,slow:1}],
+viking:['Berserk Axe','Thorns 40%, every 3rd hit crits',{thorn:.4,crit:3}],
+jester:['Trick Shot','Attacks faster, slows enemies',{cdm:.6,slow:1}],
+vampire:['Blood Feast','Heals 80% of damage dealt',{vamp:.8}],
+ogre:['Earthshaker','Stuns every 3rd hit, bigger splash',{stun:3,spl:40}],
+angel:['Divine Light','Heals allies, revives at 50% HP',{aura:20,reb:.5}],
+digger:['Tunneler','Double tower damage, 30% armor',{twm:2,armor:.3}],
+medic:['Field Hospital','Heals nearby allies strongly',{aura:30}],
+brawler:['Counter Punch','Thorns 50%, 20% armor',{thorn:.5,armor:.2}],
+monk:['Inner Peace','Heals 50% of damage, heals allies',{vamp:.5,aura:12}],
+hunter:['Rapid Fire','Attacks twice as fast',{cdm:.5}],
+eagle:['Dive Bomb','Every 2nd hit crits, +40% speed',{crit:2,spdm:1.4}],
+mech:['Overclock','Fires 35% faster, +40 range',{cdm:.65,rng:40}],
+yeti:['Avalanche','Slows enemies, explodes on death',{slow:1,boom:[55,150]}],
+lich:['Soul Drain','Heals 50% of damage, burns foes',{vamp:.5,burn:22}],
+hydra:['Regrowth','Revives at 80% HP, 20% armor',{reb:.8,armor:.2}],
+hound:['Hunting Pack','Attacks 40% faster, +20% speed',{cdm:.6,spdm:1.2}],
+bowler:['Strike!','Huge splash, stuns every 3rd hit',{spl:42,stun:3}],
+bandit:['Smoke Dash','Every 3rd hit crits, heals 30%',{crit:3,vamp:.3}],
+elephant:['Trample','Stuns every 3rd hit, 25% armor',{stun:3,armor:.25}],
+cultist:['Dark Ritual','Burns targets, heals 40%',{burn:14,vamp:.4}],
+corsair:['Cannon Barrage','Bigger splash, +30 range',{spl:36,rng:30}],
+druid:['Wild Growth','Heals allies, 20% armor',{aura:22,armor:.2}],
+samurai:['Iaido','Every 2nd hit crits, +20% speed',{crit:2,spdm:1.2}],
+alchemist:['Acid Flask','Burns and slows enemies',{burn:20,slow:1}],
+cannoneer:['Siege Cannon','Double tower damage, +30 range',{twm:2,rng:30}],
+phantom:['Ghost Walk','Heals 50%, 30% armor',{vamp:.5,armor:.3}],
+stormcaller:['Thunderstorm','Stuns every 3rd hit, huge splash',{stun:3,spl:55}],
+colossus:['Mammoth Charge','Stuns every 2nd hit, explodes on death',{stun:2,boom:[60,180]}],
+titan:['Volcanic Core','Explodes on death, burns foes',{boom:[75,300],burn:25}],
+timemage:['Time Warp','Slows enemies, attacks 40% faster',{slow:1,cdm:.6}],
+shadowking:['Dark Crown','Heals 60%, revives at 60% HP',{vamp:.6,reb:.6}],
+starknight:['Starfall','Every 2nd hit crits, 30% armor',{crit:2,armor:.3}],
+archangel:['Heavenly Grace','Heals allies, revives at 70% HP',{aura:28,reb:.7}],
+voideye:['Void Gaze','Every 2nd hit crits, +40 range, burns',{crit:2,rng:40,burn:15}],
+mecha:['Overdrive','Attacks 50% faster, explodes on death',{cdm:.5,boom:[65,220]}],
+wolf:['Alpha Howl','Attacks 40% faster, heals 25%',{cdm:.6,vamp:.25}],
+boar:['Wild Charge','Double tower damage, stuns every 3rd hit',{twm:2,stun:3}],
+bees:['Hive Mind','Attacks twice as fast, burns',{cdm:.5,burn:8}],
+crab:['Iron Shell','Blocks 50%, thorns 30%',{armor:.5,thorn:.3}],
+bard:['Battle Song','Heals allies, +25 range',{aura:18,rng:25}],
+scorpion:['Venom Sting','Burns, every 3rd hit crits',{burn:18,crit:3}],
+serpent:['Constrict','Slows enemies, heals 40%',{slow:1,vamp:.4}],
+zombie:['Undying','Revives at 70% HP, 20% armor',{reb:.7,armor:.2}],
+pixie:['Pixie Dust','Heals allies, +20% speed',{aura:20,spdm:1.2}],
+fox:['Cunning Strike','Every 2nd hit crits, +30% speed',{crit:2,spdm:1.3}],
+spiderq:['Web Trap','Slows enemies, spawns skeletons on death',{slow:1,rez:'skeletons'}],
+genie:['Wish Blast','Huge splash, stuns every 3rd hit',{spl:55,stun:3}],
+bear:['Hibernation','Revives at 60% HP, 30% armor',{reb:.6,armor:.3}],
+leviathan:['Tidal Crash','Explodes on death, stuns every 3rd hit',{boom:[70,250],stun:3}],
+owl:['Night Vision','+40 range, every 2nd hit crits',{rng:40,crit:2}],
+gator:['Death Roll','Heals 50%, stuns every 2nd hit',{vamp:.5,stun:2}],
+magnet:['Pull Field','Slows enemies, attacks 50% faster',{slow:1,cdm:.5}],
+drum:['War Drums','Heals allies, attacks 30% faster',{aura:25,cdm:.7}],
+sun:['Solar Flare','Burns, huge splash, +30 range',{burn:30,spl:60,rng:30}],
+moon:['Lunar Eclipse','Slows enemies, revives at 50% HP',{slow:1,reb:.5}],
+frog:['Tongue Lash','+30 range, stuns every 3rd hit',{rng:30,stun:3}],
+hedgehog:['Spike Ball','Thorns 60%, 20% armor',{thorn:.6,armor:.2}],
+squirrel:['Nut Stash','Heals 60%, +40% speed',{vamp:.6,spdm:1.4}],
+beetle:['Hard Carapace','Blocks 45%, revives at 40% HP',{armor:.45,reb:.4}],
+cowboy:['Quick Draw','Fires twice as fast, every 3rd shot crits',{cdm:.5,crit:3}],
+ants:['Colony','Attacks 40% faster, spawns skeletons on death',{cdm:.6,rez:'skeletons'}],
+tiger:['Pounce','Every 2nd hit crits, +25% speed',{crit:2,spdm:1.25}],
+penguin:['Ice Slide','Slows enemies, +30% speed',{slow:1,spdm:1.3}],
+kangaroo:['Boxing Match','Stuns every 3rd hit, heals 30%',{stun:3,vamp:.3}],
+mushroom:['Spore Cloud','Burns and slows, bigger splash',{burn:12,slow:1,spl:40}],
+goblin:['Sticky Fingers','Heals 50%, double tower damage',{vamp:.5,twm:2}],
+butterfly:['Mirage Wings','25% armor, heals allies',{armor:.25,aura:15}],
+lion:['Royal Roar','Stuns every 3rd hit, 20% armor',{stun:3,armor:.2}],
+troll:['Regenerate','Revives at 70% HP, heals allies',{reb:.7,aura:15}],
+pumpkin:['Jack-o-Blast','Explodes on death, burns foes',{boom:[55,160],burn:15}],
+peacock:['Dazzling Plume','+30 range, slows enemies',{rng:30,slow:1}],
+bison:['Stampede Herd','Stuns every 2nd hit, double tower damage',{stun:2,twm:2}],
+seaserpent:['Tidal Surge','Huge splash, slows enemies',{spl:58,slow:1}],
+stag:['Spirit Antlers','Heals allies, revives at 60% HP',{aura:22,reb:.6}],
+invader:['Abduction Beam','Every 2nd shot crits, +40 range, burns',{crit:2,rng:40,burn:20}]};
+const evd=k=>EVO[k][0]+': '+EVO[k][1];
+function evoStats(k){const c=C[k],e=EVO[k],f=e[2],o={...c,hp:c.hp*1.2,evo:1,fx:f};
+ if(f.cdm)o.cd=c.cd*f.cdm;if(f.rng)o.rng=c.rng+f.rng;if(f.spdm)o.spd=c.spd*f.spdm;if(f.spl)o.spl=f.spl;return o}
+const EV={};function spawn(k,team,x,y,pl){let c=C[k];if(!pl){if(S.chaos){const m=S.mods[team][k];if(m)c=modStats(c,m)}else if(team===0?P.evo[k]:S.aiEvo[k])c=EV[k]||(EV[k]=evoStats(k))}{const lv=S.chaos?11:pl?1:team===0?(P.lv[k]||1):S.cpuLv,sc=1+.1*(lv-1);c={...c,hp:c.hp*sc,dmg:c.dmg*sc}}
+ for(let i=0;i<c.num;i++)S.units.push({s:c,team,x:x+(i-(c.num-1)/2)*14,y:y+(i%2)*8,hp:c.hp,max:c.hp,t:.3});if(c.fx&&c.fx.free)spawn(c.fx.free,team,x+22,y,1)}
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function hit(from,tg,dmg,spl){const f=from.s&&from.s.fx||{},tf=tg.s&&tg.s.fx||{};
+ if(f.crit){from.n=(from.n||0)+1;if(from.n%f.crit===0)dmg*=2.5}
+ if(f.twm&&!tg.s)dmg*=f.twm;if(tf.armor)dmg*=1-tf.armor;
+ tg.hp-=dmg;if(f.vamp)from.hp=Math.min(from.max,from.hp+dmg*f.vamp);
+ if(tf.thorn&&from.s&&from.s.rng<30)from.hp-=dmg*tf.thorn;
+ if(tg.s){if(f.slow)tg.slow=2;if(f.stun){from.sn=(from.sn||0)+1;if(from.sn%f.stun===0)tg.stun=.9}if(f.burn){tg.burn=3;tg.bd=f.burn}}
+ S.fx.push({x1:from.x,y1:from.y,x2:tg.x,y2:tg.y,l:.12,r:spl||0});
+ if(spl)for(const o of S.units)if(o!==tg&&o.team===tg.team&&dist(o,tg)<spl)o.hp-=dmg*.6}
+function end(win,why){S.over=true;const xp=20+crowns(0)*25+(win===1?50:0);P.streak=win===1?(P.streak||0)+1:0;const nb=checkBadges(win===1);const l0=accLvl();P.axp=(P.axp||0)+xp;const l1=accLvl(),drop=Math.random()<(win===1?.6:.25);if(drop)P.ch++;for(let l=l0+1;l<=l1;l++){P.coins+=100*l;P.ch++}P.xp=(P.xp||0)+xp;P.xp2=(P.xp2||0)+xp;P.xp3=(P.xp3||0)+xp;P.xp4=(P.xp4||0)+xp;P.xp5=(P.xp5||0)+xp;P.xp6=(P.xp6||0)+xp;save();$('ot').textContent=win===1?'Victory! 👑':win===0?'Defeat':'Draw';
+ $('ot').style.color=win===1?'#ffd54a':win===0?'#ff6b6b':'#fff';$('os').textContent=why+' · +'+S.earn+' coins 🪙 · +'+xp+' pass XP'+(nb.length?' · 🎖️ New badge: '+nb.join(', '):'')+(drop?' · 📦 Chest drop!':'')+(l1>l0?' · ⬆ Level '+l1+'! (+coins, +chest)':'');$('over').hidden=false}
+function crowns(team){return S.tw.filter(t=>t.team!==team&&t.dead).length}
+const ban=t=>S.ban={t:2.5,txt:t};
+function doEvent(){const e=Math.random()*5|0;
+ if(e===0){ban('☄️ Meteor Shower!');for(let i=0;i<4;i++){const x=30+Math.random()*300,y=40+Math.random()*480;
+  S.fx.push({x1:x,y1:y-70,x2:x,y2:y,l:.5,r:42});
+  for(const u of S.units)if(Math.hypot(u.x-x,u.y-y)<42)u.hp-=160;
+  for(const t of S.tw)if(!t.dead&&Math.hypot(t.x-x,t.y-y)<45)t.hp-=120}}
+ else if(e===1){ban('😡 Rage! Everyone is faster');S.rage=7}
+ else if(e===2){ban('💚 Mass Heal!');for(const u of S.units)u.hp=Math.min(u.max,u.hp+u.max*.5)}
+ else if(e===3){ban('🎁 Airdrop!');spawn(ALL[Math.random()*ALL.length|0],0,60+Math.random()*240,RY+50+Math.random()*100);
+  spawn(ALL[Math.random()*ALL.length|0],1,60+Math.random()*240,RY-50-Math.random()*100)}
+ else{ban('🧊 Freeze!');S.frz=3}}
+function update(dt){if(S.pk){S.pk.t-=dt;if(S.pk.t<=0)choose(Math.random()*2|0);return}
+ S.t-=dt;const rate=(S.t<60?2:1)*(S.chaos?1.5:1);
+ if(S.ban)S.ban.t-=dt;for(const u of S.units){if(u.burn>0){u.burn-=dt;u.hp-=u.bd*dt}
+  if(u.s.fx&&u.s.fx.aura)for(const o of S.units)if(o.team===u.team&&dist(u,o)<55)o.hp=Math.min(o.max,o.hp+u.s.fx.aura*dt)}S.rage-=dt;S.frz-=dt;
+ if(S.chaos){S.pt-=dt;if(S.pt<=0)openPick()}
+ for(let i=0;i<2;i++)S.el[i]=Math.min(10,S.el[i]+dt/2.8*rate);
+ S.ai-=dt;
+ if(S.ai<=0){S.ai=(1+Math.random()*1.5)/(S.chaos?1.3:1);
+  const ks=(S.chaos?S.cdk:ALL).filter(k=>C[k].cost<=S.el[1]);
+  if(ks.length&&S.el[1]>=4.5+Math.random()*3){const k=ks[Math.random()*ks.length|0];
+   const x=Math.max(20,Math.min(340,BR[Math.random()<.5?0:1]+(Math.random()-.5)*50));
+   spawn(k,1,x,150+Math.random()*90);S.el[1]-=C[k].cost}}
+ for(const u of S.units){
+  if(S.frz>0)continue;if(u.stun>0){u.stun-=dt;continue}if(u.slow>0)u.slow-=dt;const m=(S.rage>0?1.6:1)*(u.slow>0?.5:1);u.t-=dt*m;let tg=null,best=u.s.bld?0:80;
+  if(!u.s.bld)for(const o of S.units)if(o.team!==u.team){const d=dist(u,o);if(d<best){best=d;tg=o}}
+  if(!tg){best=1e9;for(const t of S.tw)if(t.team!==u.team&&!t.dead){const d=dist(u,t);if(d<best){best=d;tg=t}}}
+  if(!tg)continue;
+  const isT=!tg.s,d=dist(u,tg);
+  if(d<=u.s.rng+(isT?22:8)){if(u.t<=0){u.t=u.s.cd;hit(u,tg,u.s.dmg,u.s.spl)}}
+  else{let wp=tg;
+   if((u.y-RY)*(tg.y-RY)<0){const bx=BR[Math.abs(u.x-BR[0])<Math.abs(u.x-BR[1])?0:1];wp={x:bx,y:RY};
+    if(dist(u,wp)<5)wp=tg}
+   const dd=dist(u,wp)||1;u.x+=(wp.x-u.x)/dd*u.s.spd*dt*m;u.y+=(wp.y-u.y)/dd*u.s.spd*dt*m}}
+ for(const u of S.units)for(const o of S.units)if(o!==u){
+  const d=dist(u,o);if(d<14&&d>0){const p=(14-d)*.25;u.x+=(u.x-o.x)/d*p;u.y+=(u.y-o.y)/d*p}}
+ for(const t of S.tw){if(t.dead)continue;t.t-=dt;
+  if(t.t<=0){let b=125,tg=null;
+   for(const u of S.units)if(u.team!==t.team){const d=dist(t,u);if(d<b){b=d;tg=u}}
+   if(tg){t.t=.9;hit(t,tg,45)}}}
+ for(const u of S.units)if(u.hp<=0){const f=u.s.fx||{};
+  if(f.reb&&!u.rb){u.rb=1;u.hp=u.max*f.reb}
+  else if(!u.dd){u.dd=1;
+   if(f.boom){S.fx.push({x1:u.x,y1:u.y,x2:u.x,y2:u.y,l:.3,r:f.boom[0]});
+    for(const o of S.units)if(o.team!==u.team&&dist(o,u)<f.boom[0])o.hp-=f.boom[1];
+    for(const t of S.tw)if(!t.dead&&t.team!==u.team&&dist(t,u)<f.boom[0]+5)t.hp-=f.boom[1]}
+   if(f.rez)spawn(f.rez,u.team,u.x,u.y,1)}}
+ S.units=S.units.filter(u=>u.hp>0);
+ for(const t of S.tw)if(!t.dead&&t.hp<=0){t.dead=true;if(t.team===1){P.coins+=100;S.earn+=100;save()}
+  if(t.king){end(t.team===1?1:0,t.team===1?'You destroyed the enemy King!':'Your King fell.');return}}
+ for(const f of S.fx)f.l-=dt;S.fx=S.fx.filter(f=>f.l>0);
+ if(S.t<=0){S.t=0;const a=crowns(0),b=crowns(1);
+  if(a!==b)end(a>b?1:0,`Crowns ${a} – ${b}`);
+  else{const hp=m=>S.tw.filter(t=>t.team===m).reduce((s,t)=>s+Math.max(0,t.hp),0),x=hp(0),y=hp(1);
+   end(Math.abs(x-y)<1?.5:x>y?0:1,'Tower health decided it');}}}
+function draw(){
+ g.clearRect(0,0,W,H);
+ for(let i=0;i<14;i++){g.fillStyle=i%2?'#3f9150':'#47a058';g.fillRect(0,i*40,W,40)}
+ g.fillStyle='#3a88c8';g.fillRect(0,RY-14,W,28);
+ g.fillStyle='#8a6a3f';for(const x of BR)g.fillRect(x-22,RY-16,44,32);
+ g.fillStyle='rgba(255,255,255,.12)';for(const x of BR)g.fillRect(x-22,RY-4,44,2);
+ if(S.sel!=null){g.fillStyle='rgba(255,255,255,.14)';g.fillRect(0,RY+14,W,H-RY-14)}
+ g.textAlign='center';g.textBaseline='middle';
+ for(const t of S.tw){const w=t.king?50:40,h=t.king?44:36;
+  g.fillStyle=t.dead?'#555':t.team?'#a33':'#2a62c4';g.fillRect(t.x-w/2,t.y-h/2,w,h);
+  g.strokeStyle='rgba(0,0,0,.4)';g.strokeRect(t.x-w/2,t.y-h/2,w,h);
+  g.font=(t.king?26:20)+'px serif';g.fillText(t.dead?'💥':t.king?'👑':'🏰',t.x,t.y);
+  if(!t.dead)bar(t.x,t.y-h/2-7,w,t.hp/t.max,t.team)}
+ for(const f of S.fx){g.strokeStyle='#fff8b0';g.lineWidth=2;g.beginPath();g.moveTo(f.x1,f.y1);g.lineTo(f.x2,f.y2);g.stroke();
+  if(f.r){g.fillStyle='rgba(255,160,40,.35)';g.beginPath();g.arc(f.x2,f.y2,f.r,0,7);g.fill()}}
+ for(const u of S.units.slice().sort((a,b)=>a.y-b.y)){const r=u.s.big?14:10;
+  g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.arc(u.x,u.y+3,r,0,7);g.fill();
+  g.fillStyle=u.team?'#e5484d':'#3b82f6';g.beginPath();g.arc(u.x,u.y,r,0,7);g.fill();
+  g.strokeStyle=u.s.evo?'#ffd54a':u.s.md?'#ff4fa3':'#fff';g.lineWidth=u.s.evo||u.s.md?3:1.5;g.stroke();
+  g.font=(r+2)+'px serif';g.fillText(u.s.em,u.x,u.y+1);if(u.s.me){g.font='11px serif';g.fillText(u.s.me,u.x+r-2,u.y-r+2)}
+  if(u.hp<u.max)bar(u.x,u.y-r-5,22,u.hp/u.max,u.team)}
+ if(S.frz>0){g.fillStyle='rgba(120,200,255,.25)';g.fillRect(0,0,W,H)}
+ else if(S.rage>0){g.fillStyle='rgba(255,60,60,.12)';g.fillRect(0,0,W,H)}
+ if(S.pk&&0){}if(S.ban&&S.ban.t>0){g.fillStyle='#000b';g.fillRect(0,RY-20,W,40);g.fillStyle='#ffd54a';g.font='bold 22px system-ui';g.fillText(S.ban.txt,W/2,RY)}}
+function bar(x,y,w,p,team){g.fillStyle='#000a';g.fillRect(x-w/2,y-2,w,4);
+ g.fillStyle=team?'#ff6b6b':'#5aa2ff';g.fillRect(x-w/2,y-2,w*Math.max(0,p),4)}
+function ui(){
+ const m=Math.floor(S.t/60),s=Math.floor(S.t%60);
+ $('timer').textContent=`${m}:${String(s).padStart(2,'0')}`+(S.chaos?' 🌪️':'')+(S.t<60?' ⚡2x':'');
+ if(S.pk)$('pt').textContent='Auto-pick in '+Math.ceil(S.pk.t)+'s';$('score').textContent=`🪙 ${P.coins}  👑 ${crowns(0)} – ${crowns(1)}`;
+ $('fill').style.width=S.el[0]*10+'%';$('ex').textContent=Math.floor(S.el[0]);
+ [...$('hand').querySelectorAll('.card')].slice(0,4).forEach((b,i)=>{
+  b.classList.toggle('no',C[S.h[i]].cost>S.el[0]);b.classList.toggle('sel',S.sel===i)})}
+cv.addEventListener('click',e=>{
+ if(!S||S.over||S.pk||S.sel==null)return;
+ const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+ const k=S.h[S.sel],c=C[k];
+ if(y<RY+20||c.cost>S.el[0])return;
+ spawn(k,0,Math.max(15,Math.min(345,x)),Math.min(y,H-15));S.el[0]-=c.cost;
+ S.q.push(k);S.h[S.sel]=S.q.shift();S.sel=null;buildHand()});
+$('again').onclick=()=>reset(S.chaos);$('home').onclick=()=>{S=null;show('menu')};$('quit').onclick=()=>{S=null;show('menu')};
+function show(id){['menu','deck','gacha','evo','bp','col','shop','bdg','app'].forEach(i=>$(i).hidden=i!==id);$('over').hidden=true;$('pick').hidden=true;
+ $('mc').textContent='🪙 '+P.coins;$('lvl').innerHTML=`⭐ Level ${accLvl()}${accLvl()>=30?' (MAX)':''} · 📦 ${P.ch} chest${P.ch===1?'':'s'}<div class="bpx"><i style="width:${accLvl()>=30?100:(P.axp%150)/1.5}%"></i></div>`;$('gc').textContent='🪙 '+P.coins;$('msg').textContent='';
+ if(id==='deck')drawDeck();if(id==='evo')drawEvo();if(id==='bp')drawBP();if(id==='col')drawCol();if(id==='shop')drawShop();if(id==='bdg')drawBdg();if(id==='gacha'){$('pull').textContent='Pull ('+PULL+' 🪙)';$('pull').disabled=P.coins<PULL}}
+const cardH=(k,x='')=>{const c=C[k];return `<span class="e">${c.em}</span><small>${c.nm}${P.evo[k]&&!(S&&S.chaos&&!$('app').hidden)?'⭐':''}</small><small style="opacity:.75">Lv ${lvOf(k)}</small><span class="c">${c.cost}</span>${x}`};
+function drawDeck(){$('dc').textContent=`(${P.deck.length}/${DECK})`;const el=$('dg');el.innerHTML='';
+ for(const k of ALL){const own=P.own.includes(k),b=document.createElement('button');
+  b.className='card'+(own?'':' lock')+(P.deck.includes(k)?' in':'');b.style.borderColor=R[C[k].r][1];
+  b.innerHTML=own?cardH(k):'<span class="e">🔒</span><small>'+C[k].nm+'</small>';
+  b.onclick=()=>{if(!own)return;const i=P.deck.indexOf(k);
+   if(i>=0)P.deck.splice(i,1);else if(P.deck.length<DECK)P.deck.push(k);save();drawDeck();colInfo(k,true,$('di'),drawDeck)};el.appendChild(b)}}
+$('bPlay').onclick=()=>{if(P.deck.length!==DECK){$('msg').textContent='Your deck needs exactly 8 cards!';return}reset()};
+function drawEvo(){const el=$('eg');el.innerHTML='';$('ws').textContent='🌟 Wild shards: '+(P.ws||0);
+ for(const k of P.own){const n=P.sh[k]||0,b=document.createElement('button'),ev=P.evo[k];
+  b.className='card'+(ev?' in':'');b.style.borderColor=R[C[k].r][1];
+  b.innerHTML=cardH(k,`<small style="color:#ffd54a">${ev?'EVOLVED':Math.min(n,SH)+'/'+SH}</small>`);
+  b.onclick=()=>{if(ev){$('em').textContent=C[k].nm+': '+evd(k);return}
+   if(n<SH&&P.ws>0){P.ws--;P.sh[k]=n+1;save();drawEvo();$('em').textContent='Placed a wild shard on '+C[k].nm+' ('+(n+1)+'/'+SH+')';return}if(n<SH){$('em').textContent='Need '+SH+' shards (have '+n+'). Evolves to: '+evd(k);return}
+   P.sh[k]-=SH;P.evo[k]=1;save();drawEvo();$('em').textContent='⭐ '+C[k].nm+' evolved! '+evd(k)};el.appendChild(b)}}
+$('bEvo').onclick=()=>show('evo');$('bBP').onclick=()=>show('bp');
+const BPD=[i=>({f:i===5?{card:'zapper'}:i===10?{card:'sorcerer'}:i%3===0?{sh:1}:{c:40+i*10},p:i===5?{card:'phoenix'}:i===10?{card:'kraken'}:i%2===0?{sh:2}:{c:100+i*20}}),
+ i=>({f:i===5?{card:'medic'}:i===10?{card:'monk'}:i===15?{card:'hunter'}:i%3===0?{sh:1}:{c:50+i*10},p:i===5?{card:'eagle'}:i===10?{card:'mech'}:i===15?{card:'hydra'}:i%2===0?{sh:2}:{c:120+i*15}})];
+const SEA=[{n:10,xk:'xp',pk:'prem',cost:500,ck:['f','p'],t:'Season 1'},{n:15,xk:'xp2',pk:'prem2',cost:800,ck:['g'.replace('g','f'),'p'],t:'Season 1'}];
+SEA[1]={n:15,xk:'xp2',pk:'prem2',cost:800,ck:['g','q'],t:'Season 2'};
+SEA[2]={n:15,xk:'xp3',pk:'prem3',cost:700,ck:['h','r'],t:'Season 3 🆕'};SEA[3]={n:15,xk:'xp4',pk:'prem4',cost:1000,ck:['i','s'],t:'Season 4'};SEA[4]={n:15,xk:'xp5',pk:'prem5',cost:1200,ck:['j','t'],t:'Season 5'};SEA[5]={n:15,xk:'xp6',pk:'prem6',cost:1500,ck:['k','u'],t:'Season 6 🆕'};
+BPD.push(i=>({f:i===5?{card:'hound'}:i===10?{card:'corsair'}:i===15?{card:'starknight'}:i%3===0?{sh:1}:{c:60+i*10},p:i===5?{card:'phantom'}:i===10?{card:'timemage'}:i===15?{card:'shadowking'}:i%2===0?{sh:2}:{c:150+i*15}}),
+ i=>({f:i===5?{card:'cultist'}:i===10?{card:'alchemist'}:i===15?{card:'archangel'}:i%3===0?{sh:1}:{c:70+i*10},p:i===5?{card:'stormcaller'}:i===10?{card:'voideye'}:i===15?{card:'mecha'}:i%2===0?{sh:2}:{c:160+i*15}}));
+let bs=0;
+const rl=r=>r.c?'🪙 '+r.c:r.card?C[r.card].em+' '+C[r.card].nm:r.chest?'📦 '+r.chest+' chest':r.cp?'🃏 '+r.cp+' copies':'🌟 '+r.sh+' wild shard'+(r.sh>1?'s':'');
+function give(r){if(r.c)P.coins+=r.c;
+ if(r.card){if(P.own.includes(r.card))P.coins+=100;else P.own.push(r.card)}
+ if(r.sh)P.ws=(P.ws||0)+r.sh;if(r.chest)P.ch+=r.chest;if(r.cp){const k=P.own[Math.random()*P.own.length|0];P.cp[k]=(P.cp[k]||0)+r.cp}}
+function drawBP(){const Q=SEA[bs],xp=P[Q.xk]||0,lv=Math.min(Q.n,Math.floor(xp/100)),pr=P[Q.pk],el=$('bl');$('bc').textContent='🪙 '+P.coins;
+ $('tabs').innerHTML='';SEA.forEach((q,i)=>{const b=document.createElement('button');b.className='big'+(i===bs?'':' gry');b.style.cssText='font-size:14px;padding:10px;margin:4px 0';b.textContent=q.t;b.onclick=()=>{bs=i;drawBP()};$('tabs').appendChild(b)});
+ $('tabs').style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:6px';
+ $('bx').innerHTML=`<div>Tier ${lv}/${Q.n} · ${xp} XP</div><div class="bpx"><i style="width:${lv>=Q.n?100:xp%100}%"></i></div><div style="font-size:12px;opacity:.7">XP per match: 20 + 25 per tower + 50 for a win. 100 XP per tier.</div>`
+ +(pr?'<div style="color:#ffd54a">✨ Premium unlocked</div>':`<button class="big pur" id="bPrem" style="font-size:15px;padding:10px">Unlock Premium (${Q.cost} 🪙)</button>`);
+ if(!pr)$('bPrem').onclick=()=>{if(P.coins<Q.cost)return;P.coins-=Q.cost;P[Q.pk]=true;save();drawBP()};
+ el.innerHTML='<div class="row"><span></span><span>Free</span><span>Premium</span></div>';
+ for(let n=1;n<=Q.n;n++){const t=BPD[bs](n),row=document.createElement('div');row.className='row';row.innerHTML='<span>'+n+'</span>';
+  [[Q.ck[0],t.f,true],[Q.ck[1],t.p,pr]].forEach(([tr,r,ok])=>{const key=tr+n,b=document.createElement('button'),got=P.claimed[key];
+   b.textContent=(got?'✓ ':'')+rl(r);b.className=got?'done':lv>=n&&ok?'ok':'';b.disabled=got||lv<n||!ok;
+   b.onclick=()=>{P.claimed[key]=1;give(r);save();drawBP()};row.appendChild(b)});
+  el.appendChild(row)}}
+function drawCol(){const el=$('cg');el.innerHTML='';$('ci').textContent='Tap a card to see its evolution.';
+ $('cs').textContent=`⭐ ${ALL.filter(k=>P.evo[k]).length} / ${ALL.length} evo stars · ${P.own.length} / ${ALL.length} cards`;
+ for(const k of ALL){const own=P.own.includes(k),ev=P.evo[k],b=document.createElement('button');
+  b.className='card'+(own?'':' lock')+(ev?' in':'');b.style.borderColor=R[C[k].r][1];
+  b.innerHTML=own?cardH(k,`<small style="color:#ffd54a">${ev?'⭐':'☆'}</small>`):'<span class="e">🔒</span><small>'+C[k].nm+'</small>';
+  b.onclick=()=>colInfo(k,own);el.appendChild(b)}}
+$('bCol').onclick=()=>show('col');$('bShop').onclick=()=>show('shop');$('bBdg').onclick=()=>show('bdg');
+BPD.push(i=>({f:i===5?{card:'bard'}:i===10?{card:'fox'}:i===15?{card:'owl'}:i%3===0?{sh:1}:i%4===0?{chest:1}:{c:90+i*10},p:i===5?{card:'bear'}:i===10?{card:'titan'}:i===15?{card:'leviathan'}:i%2===0?{sh:2}:i%3===0?{chest:1}:{cp:5}}));
+const accLvl=()=>Math.min(30,1+Math.floor((P.axp||0)/150));
+function openChest(g){const out=[],c=(g?200:60)+Math.floor(Math.random()*(g?300:100));P.coins+=c;out.push('🪙'+c);
+ for(let i=0;i<(g?3:1);i++){const k=P.own[Math.random()*P.own.length|0],q=1+(Math.random()*(g?4:2)|0);P.cp[k]=(P.cp[k]||0)+q;out.push(C[k].em+' x'+q+' copies')}
+ if(Math.random()<(g?.8:.25)){const ks=P.own.filter(k=>!P.evo[k]);if(ks.length){const k=ks[Math.random()*ks.length|0];P.sh[k]=(P.sh[k]||0)+1;out.push('⭐ evo shard on '+C[k].em+' '+C[k].nm)}}
+ save();return out.join(' · ')}
+function colInfo(k,own,el=$('ci'),re=drawCol){
+ if(!own){el.textContent='🔒 '+C[k].nm+(C[k].r==='x'?' is an exclusive battle pass reward.':' is not unlocked yet. Try the gacha or the shop!');return}
+ const lv=P.lv[k]||1,cp=P.cp[k]||0,need=lv,cost=lv*60,ev=P.evo[k];
+ el.innerHTML=`${C[k].nm} (${R[C[k].r][0]}) · Level ${lv}/11 (+${(lv-1)*10}% stats) · ${evd(k)} · ${ev?'⭐ Evolved':'Shards '+(P.sh[k]||0)+'/'+SH}<br>`
+ +(lv>=11?'<b>MAX LEVEL</b>':`<button id="up" class="sbtn" style="margin:6px auto;max-width:300px"><span>⬆ Level up (${cp}/${need} copies)</span><b>🪙 ${cost}</b></button>`);
+ if(lv<11){const b=el.querySelector('#up');b.disabled=cp<need||P.coins<cost;b.onclick=()=>{P.cp[k]-=need;P.coins-=cost;P.lv[k]=lv+1;save();re();colInfo(k,true,el,re)}}}
+BPD.push(i=>({f:i===5?{card:'wolf'}:i===10?{card:'serpent'}:i===15?{card:'magnet'}:i%3===0?{sh:1}:{c:80+i*10},p:i===5?{card:'spiderq'}:i===8?{card:'drum'}:i===11?{card:'moon'}:i===13?{card:'gator'}:i===15?{card:'sun'}:i%2===0?{sh:2}:{c:170+i*15}}));
+const MR={c:['Common','#9aa3b2'],r:['Rare','#4aa3ff'],e:['Epic','#b45cff']};
+const M=(id,n,em,r,d,o)=>({id,n,em,r,d,o});
+const MODS=[
+M('sturdy','Sturdy','🧱','c','+40% health',{hpm:1.4}),M('sharp','Sharp','🗡️','c','+30% damage',{dmgm:1.3}),
+M('swift','Swift','💨','c','+30% speed',{spdm:1.3}),M('quick','Quick Hands','⏩','c','Attacks 25% faster',{cdm:.75}),
+M('reach','Long Reach','📏','c','+25 range',{rng:25}),M('padding','Padding','🧸','c','Takes 15% less damage',{armor:.15}),
+M('duo','Duo','👥','c','Deploys one extra unit',{num:1}),M('leech','Leech','🩸','c','Heals 20% of damage dealt',{vamp:.2}),
+M('ember','Ember Touch','🔥','r','Attacks burn targets',{burn:15}),M('frost','Frost Touch','🧊','r','Attacks slow targets',{slow:1}),
+M('shock','Shockwave','💥','r','Attacks splash nearby foes',{spl:35}),M('thorns','Thorn Coat','🌵','r','Reflects 35% melee damage',{thorn:.35}),
+M('ghost','Ghost Armor','👻','r','30% armor and +15% speed',{armor:.3,spdm:1.15}),M('burst','Death Burst','💣','r','Explodes when it dies',{boom:[50,150]}),
+M('stunner','Stunner','⚡','r','Every 3rd hit stuns',{stun:3}),
+M('titan','Titan Form','🗿','e','Double health and +50% damage',{hpm:2,dmgm:1.5}),M('backup','Backup Squad','🤺','e','Deploys with a free Mini Knights squad',{free:'minis'}),
+M('phoenix','Phoenix Rite','🕊️','e','Revives at full health and burns foes',{reb:1,burn:20}),M('barrage','Blast Barrage','🎆','e','Huge splash, +40 range, 40% faster',{spl:55,rng:40,cdm:.6}),
+M('lord','Vampire Lord','🧛','e','Heals 70% of damage, every 2nd hit crits',{vamp:.7,crit:2}),M('swarm','Swarm Birth','🐝','e','Free Imps on deploy, skeletons on death',{rez:'skeletons',free:'imps'}),
+M('overcharge','Overcharged','⚙️','e','Attacks twice as fast, +40% speed, +50% damage',{cdm:.5,spdm:1.4,dmgm:1.5})];
+const MOD=Object.fromEntries(MODS.map(m=>[m.id,m]));
+function modStats(c,m){const o={...c,md:1,me:m.em},f={...(c.fx||{})};
+ for(const[k,v]of Object.entries(m.o)){if(k==='hpm')o.hp*=v;else if(k==='dmgm')o.dmg*=v;else if(k==='cdm')o.cd*=v;else if(k==='rng')o.rng+=v;else if(k==='spdm')o.spd*=v;else if(k==='spl')o.spl=v;else if(k==='num')o.num+=v;else f[k]=v}
+ o.fx=f;return o}
+function rollMod(){const x=Math.random()*100,r=x<50?'c':x<85?'r':'e',p=MODS.filter(m=>m.r===r);return p[Math.random()*p.length|0]}
+function offers(deck,team){const fr=deck.filter(k=>!S.mods[team][k]);if(!fr.length)return[];const out=[],used=new Set();
+ for(let i=0;i<2;i++){const k=fr[Math.random()*fr.length|0];let m;do{m=rollMod()}while(used.has(m.id));used.add(m.id);out.push({k,m})}return out}
+function openPick(){S.pt=45+Math.random()*15;
+ const co=offers(S.cdk,1);if(co.length){const o=co[Math.random()*co.length|0];S.mods[1][o.k]=o.m;$('pe').textContent='🔴 Opponent picked '+o.m.em+' '+o.m.n+' ('+MR[o.m.r][0]+') for '+C[o.k].em+' '+C[o.k].nm;renderMods()}else $('pe').textContent=''
+ const po=offers(P.deck,0);if(!po.length)return;S.pk={t:10,opts:po};$('pick').hidden=false;const el=$('po');el.innerHTML='';
+ po.forEach((o,i)=>{const b=document.createElement('button'),c=C[o.k];b.className='opt';b.style.cssText='border-color:'+MR[o.m.r][1]+';margin:6px 0;display:block';
+  b.innerHTML=`<div style="font-size:12px;color:${MR[o.m.r][1]}">${MR[o.m.r][0]}</div><div style="font-weight:700;font-size:17px">${o.m.em} ${o.m.n} on ${c.em} ${c.nm}</div><div style="font-size:13px;opacity:.85">${o.m.d}</div>`;
+  b.onclick=()=>choose(i);el.appendChild(b)})}
+function choose(i){const o=S.pk.opts[i];S.mods[0][o.k]=o.m;S.picked.push(o.m.id);S.pk=null;$('pick').hidden=true;buildHand()}
+const has=(...a)=>S&&S.picked&&a.every(i=>S.picked.includes(i));
+const BADGES=[
+{id:'hat',em:'🎩',n:'Hat Trick',d:'Win 3 matches in a row',f:()=>P.streak>=3},
+{id:'chw',em:'🌪️',n:'Chaos Champion',d:'Win a Chaos match',f:w=>w&&S&&S.chaos},
+{id:'dom',em:'👑',n:'Total Domination',d:'Destroy all 3 enemy towers in one match',f:()=>S&&S.tw&&crowns(0)>=3},
+{id:'fort',em:'🛡️',n:'Fortress Mode',d:'Pick Sturdy and Padding in one Chaos match',f:()=>has('sturdy','padding')},
+{id:'spd',em:'🏎️',n:'Speed Demon',d:'Pick Swift and Quick Hands in one Chaos match',f:()=>has('swift','quick')},
+{id:'pyro',em:'🧯',n:'Pyromaniac',d:'Pick Ember Touch and Blast Barrage in one Chaos match',f:()=>has('ember','barrage')},
+{id:'epic',em:'💜',n:'Epic Luck',d:'Pick 3 Epic modifiers in one Chaos match',f:()=>S&&S.picked&&S.picked.filter(i=>MOD[i].r==='e').length>=3},
+{id:'col',em:'📚',n:'Collector',d:'Own 40 cards',f:()=>P.own.length>=40},
+{id:'star',em:'⭐',n:'Star Gazer',d:'Evolve 5 cards',f:()=>Object.keys(P.evo).length>=5},
+{id:'rich',em:'💰',n:'Treasure Hoarder',d:'Hold 3000 coins',f:()=>P.coins>=3000}];
+function checkBadges(w){const n=[];for(const b of BADGES)if(!P.badges[b.id]&&b.f(w)){P.badges[b.id]=1;n.push(b.em+' '+b.n)}if(n.length)save();return n}
+function drawBdg(){checkBadges(false);const el=$('bgg');el.innerHTML='';$('bi').textContent='Some badges are hidden until you earn them.';
+ $('bs2').textContent=`🎖️ ${BADGES.filter(b=>P.badges[b.id]).length} / ${BADGES.length} discovered`;
+ for(const b of BADGES){const ok=P.badges[b.id],d=document.createElement('button');d.className='card'+(ok?' in':' lock');
+  d.innerHTML=ok?`<span class="e">${b.em}</span><small>${b.n}</small>`:'<span class="e">❓</span><small>Hidden</small>';
+  d.onclick=()=>{$('bi').textContent=ok?b.em+' '+b.n+': '+b.d:'❓ Hidden badge. Keep playing, trying modifiers and collecting to discover it.'};el.appendChild(d)}}
+const PRICE={c:200,r:500,e:1000,l:2500};
+function seedRand(t){let h=0;for(const ch of t)h=(h*31+ch.charCodeAt(0))|0;return()=>{h=(h*1664525+1013904223)|0;return(h>>>0)%1e6/1e6}}
+function megaPull(){const out=[];for(let i=0;i<10;i++){const x=Math.random()*100,rar=x<55?'c':x<83?'r':x<96?'e':'l',pool=ALL.filter(k=>C[k].r===rar),k=pool[Math.random()*pool.length|0];
+ if(P.own.includes(k)){P.coins+=DUPE;P.cp[k]=(P.cp[k]||0)+1;out.push(C[k].em)}else{P.own.push(k);out.push('✨'+C[k].em+C[k].nm)}}
+ $('sr').textContent='Mega Pack: '+out.join(' ')}
+function drawShop(){const day=new Date().toDateString();if(P.shopDay!==day){P.shopDay=day;P.sb={};save()}
+ $('sc').textContent='🪙 '+P.coins;const el=$('sl');el.innerHTML='';
+ const h=t=>{const d=document.createElement('div');d.style.cssText='text-align:left;margin:12px 0 2px;font-weight:700';d.textContent=t;el.appendChild(d)};
+ const add=(txt,cost,fn,done)=>{const b=document.createElement('button');b.className='sbtn';b.innerHTML=`<span>${txt}</span><b>${done?'✓':'🪙 '+cost}</b>`;b.disabled=!!done||P.coins<cost;b.onclick=()=>{P.coins-=cost;fn();save();drawShop()};el.appendChild(b)};
+ h('🎁 Daily');const g=document.createElement('button');g.className='sbtn';g.innerHTML='<span>Daily gift</span><b>+100 🪙</b>';g.disabled=P.giftDay===day;
+ g.onclick=()=>{P.giftDay=day;P.coins+=100;save();drawShop()};el.appendChild(g);
+ h("🛒 Today's offers (refresh daily)");const rnd=seedRand(day),pool=ALL.filter(k=>C[k].r!=='x');
+ for(let i=pool.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
+ pool.slice(0,4).forEach(k=>{const own=P.own.includes(k),cost=own?120:PRICE[C[k].r];
+  add(`${C[k].em} ${C[k].nm} <small>${R[C[k].r][0]}${own?' · +2 copies':''}</small>`,cost,()=>{if(own)P.cp[k]=(P.cp[k]||0)+2;else P.own.push(k);P.sb[k]=1},P.sb[k])});
+ h('📦 Chests');
+ if(P.ch>0){const o=document.createElement('button');o.className='sbtn';o.innerHTML=`<span>🎁 Open a chest (you have ${P.ch})</span><b>FREE</b>`;o.onclick=()=>{P.ch--;$('sr').textContent='Chest: '+openChest(0);save();drawShop()};el.appendChild(o)}
+ add('📦 Wooden Chest',250,()=>{$('sr').textContent='Chest: '+openChest(0)});
+ add('🥇 Golden Chest (3x loot, better shard odds)',800,()=>{$('sr').textContent='Golden Chest: '+openChest(1)});
+ h('🛍️ Boosts');
+ add('🃏 Card Copies x5 (random owned card)',300,()=>{const k=P.own[Math.random()*P.own.length|0];P.cp[k]=(P.cp[k]||0)+5;$('sr').textContent='+5 copies of '+C[k].em+' '+C[k].nm});
+ add('🎓 Level Boost: +100 account XP',400,()=>{P.axp=(P.axp||0)+100;$('sr').textContent='+100 account XP'});
+ add('🏆 Pass Boost: +100 XP to Season 6',500,()=>{P.xp6=(P.xp6||0)+100;$('sr').textContent='+100 Season 6 XP'});
+ h('🎰 Gacha');add('🎰 Mega Pack: 10 gacha pulls',900,megaPull)}$('bChaos').onclick=()=>{if(P.deck.length!==DECK){$('msg').textContent='Your deck needs exactly 8 cards!';return}reset(true)};
+$('bDeck').onclick=()=>show('deck');$('bGacha').onclick=()=>show('gacha');
+$('pull').onclick=()=>{if(P.coins<PULL)return;P.coins-=PULL;
+ const x=Math.random()*100,rar=x<55?'c':x<83?'r':x<96?'e':'l',pool=ALL.filter(k=>C[k].r===rar),k=pool[Math.random()*pool.length|0];
+ const nw=!P.own.includes(k);if(nw)P.own.push(k);else{P.coins+=DUPE;P.cp[k]=(P.cp[k]||0)+1}save();
+ $('res').innerHTML=`<div class="card" style="border-color:${R[rar][1]};box-shadow:0 0 22px ${R[rar][1]}">${cardH(k)}<div style="color:${R[rar][1]};font-weight:700;margin-top:6px">${R[rar][0]}</div><div>${nw?'✨ NEW!':'Duplicate: +1 card copy, +'+DUPE+' 🪙'}</div></div>`;
+ show('gacha');$('res').dataset.x=1};
+function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+ if(S&&!$('app').hidden){if(!S.over)update(dt);draw();ui()}requestAnimationFrame(loop)}
+show('menu');requestAnimationFrame(loop);
+</script></body></html>
